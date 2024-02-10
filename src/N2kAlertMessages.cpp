@@ -242,6 +242,7 @@ bool ParseN2kPGN126985(
 	N2kMsg.GetVarStr(AlertTextDescriptionSize, (char*)AlertTextDescription, Index);
 	size_t AlertLocationTextDescriptionSize = sizeof(AlertLocationTextDescription);
 	N2kMsg.GetVarStr(AlertLocationTextDescriptionSize, (char*)AlertLocationTextDescription, Index);
+	return true;
 };
 
 
