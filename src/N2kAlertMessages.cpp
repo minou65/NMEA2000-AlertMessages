@@ -5,7 +5,7 @@
 #include "N2kAlertMessages.h"
 
 //*****************************************************************************
-// Alert Notification
+// This PGN is used to report the status of an aler
 void SetN2kPGN126983(
 	tN2kMsg &N2kMsg,
 	tN2kAlertType AlertType,

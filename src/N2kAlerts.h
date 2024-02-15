@@ -10,6 +10,7 @@
 #endif
 
 #include "N2kAlertMessages.h"
+#include <N2kTimer.h>
 
 #define String_Len 50
 
@@ -39,6 +40,10 @@ public:
 
 	void SetN2kAlertText(tN2kMsg &N2kMsg);
 	void SetN2kAlert(tN2kMsg &N2kMsg);
+
+	void SetTemporarySilenceTime(uint16_t seconds);
+
+	bool ParseAlertResponse(const tN2kMsg &N2kMsg);
 
 private:
 	uint16_t AlertId;
@@ -74,6 +79,12 @@ private:
 	t2kNAlertThresholdMethod ThresholdMethod;
 	uint8_t ThresholdFormat;
 	uint64_t ThresholdLevel;
+
+	tN2kScheduler TemporarySilenceTimer;
+	uint32_t TemporarySilenceDelay;
+
+	void SetAlertExceeded();
+	void ResetAlert();
 };
 
 #endif

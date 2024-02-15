@@ -29,6 +29,19 @@ const unsigned long AlarmDeviceDeviceMessages[] PROGMEM = {
     0
 };
 
+typedef struct {
+    unsigned long PGN;
+    void (*Handler)(const tN2kMsg& N2kMsg);
+} tNMEA2000Handler;
+
+void AlertResponse(const tN2kMsg& N2kMsg);
+void HandleNMEA2000Msg(const tN2kMsg& N2kMsg);
+
+tNMEA2000Handler NMEA2000Handlers[] = {
+    {126984L,&AlertResponse},
+    {0,0}
+};
+
 // Define schedulers for messages. Define schedulers here disabled. Schedulers will be enabled
 // on OnN2kOpen so they will be synchronized with system.
 // We use own scheduler for each message so that each can have different offset and period.
@@ -37,6 +50,7 @@ const unsigned long AlarmDeviceDeviceMessages[] PROGMEM = {
 // each message so they will not be sent at same time.
 tN2kSyncScheduler TemperatureScheduler(false, 2000, 500);
 tN2kSyncScheduler AlarmScheduler(false, 500, 100);
+tN2kSyncScheduler AlarmTextScheduler(false, 5000, 500);
 
 
 tN2kAlert TemperatureAlert(N2kts_AlertTypeWarning, N2kts_AlertCategoryTechnical, 10);
@@ -48,6 +62,7 @@ void OnN2kOpen() {
     // Start schedulers now.
     TemperatureScheduler.UpdateNextTime();
     AlarmScheduler.UpdateNextTime();
+    AlarmTextScheduler.UpdateNextTime();
 }
 
 // *****************************************************************************
@@ -100,7 +115,7 @@ void setup() {
     NMEA2000.SetDeviceInformation(
         112234, // Unique number. Use e.g. Serial number.
         120, // Device function=Alarm Enunciator. See DEVICE_FUNCTION (0 - 255) https://canboat.github.io/canboat/canboat.html#main
-        75, // Device class=Sensor Communication Interface. DEVICE_CLASS (0 - 127) https://canboat.github.io/canboat/canboat.html#main
+        20, // Device class=Safety systems. DEVICE_CLASS (0 - 127) https://canboat.github.io/canboat/canboat.html#main
         2040, // Just choosen free from code list on MANUFACTURER_CODE (0 - 2047) https://canboat.github.io/canboat/canboat.html#main
         4, // Marine. INDUSTRY_CODE (0 - 7)
         AlarmDevice
@@ -111,10 +126,6 @@ void setup() {
     NMEA2000.SetForwardStream(&Serial);
     // If you want to use simple ascii monitor like Arduino Serial Monitor, uncomment next line
     NMEA2000.SetForwardType(tNMEA2000::fwdt_Text); // Show in clear text. Leave uncommented for default Actisense format.
-
-    TemperatureAlert.SetAlertSystem(1, 1, 1, N2kts_AlertLanguageEnglishUS, "Temperatur", "Temperatur engine rooom exceeded the threshold");
-    TemperatureAlert.SetAlertDataSource(112233, 1, 1);
-    TemperatureAlert.SetAlertThreshold(N2kts_AlertThresholddMethodGreater, 0, 60);
 
     // If you also want to see all traffic on the bus use N2km_ListenAndNode instead of N2km_NodeOnly below
     NMEA2000.SetMode(tNMEA2000::N2km_NodeOnly);
@@ -129,9 +140,15 @@ void setup() {
     NMEA2000.ExtendTransmitMessages(TemperaturDeviceMessages);
     NMEA2000.ExtendTransmitMessages(AlarmDeviceDeviceMessages);
 
+    NMEA2000.SetMsgHandler(HandleNMEA2000Msg);
+
     // Define OnOpen call back. This will be called, when CAN is open and system starts address claiming.
     NMEA2000.SetOnOpen(OnN2kOpen);
     NMEA2000.Open();
+
+    TemperatureAlert.SetAlertSystem(1, 1, NMEA2000.GetN2kSource(AlarmDevice), N2kts_AlertLanguageEnglishUS, "Temperatur", "Temperatur engine rooom exceeded the threshold");
+    TemperatureAlert.SetAlertDataSource(1, 1, NMEA2000.GetN2kSource(TemperaturDevice));
+    TemperatureAlert.SetAlertThreshold(N2kts_AlertThresholddMethodGreater, 0, 60);
 }
 
 
@@ -168,10 +185,28 @@ void SendN2kAlarm() {
 
     if (AlarmScheduler.IsTime()) {
         AlarmScheduler.UpdateNextTime();
-        TemperatureAlert.SetN2kAlertText(N2kMsg);
-        NMEA2000.SendMsg(N2kMsg, AlarmDevice);
-
         TemperatureAlert.SetN2kAlert(N2kMsg);
         NMEA2000.SendMsg(N2kMsg, AlarmDevice);
+    }
+
+    if (AlarmTextScheduler.IsTime()) {
+        AlarmTextScheduler.UpdateNextTime();
+        TemperatureAlert.SetN2kAlertText(N2kMsg);
+        NMEA2000.SendMsg(N2kMsg, AlarmDevice);
+    }
+}
+
+void AlertResponse(const tN2kMsg &N2kMsg) {
+    TemperatureAlert.ParseAlertResponse(N2kMsg);
+}
+
+void HandleNMEA2000Msg(const tN2kMsg &N2kMsg) {
+    int iHandler;
+
+    // Find handler
+    for (iHandler = 0; NMEA2000Handlers[iHandler].PGN != 0 && !(N2kMsg.PGN == NMEA2000Handlers[iHandler].PGN); iHandler++);
+
+    if (NMEA2000Handlers[iHandler].PGN != 0) {
+        NMEA2000Handlers[iHandler].Handler(N2kMsg);
     }
 }
