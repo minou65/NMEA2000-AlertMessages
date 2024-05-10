@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{95094ced-a225-44d5-a0a3-819240c50c09}</ItemsProjectGuid>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="$(MSBuildThisFileDirectory)library.properties" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- <ClInclude Include="$(MSBuildThisFileDirectory)NMEA2000_AlertMessages.h" /> -->
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\N2kAlertMessages.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\N2kAlertMessagesEnumToStr.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\N2kAlerts.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)src\N2kAlertTypes.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\N2kAlertMessages.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)src\N2kAlerts.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)examples\TemperaturMonitor\TemperatureMonitor.ino" />
+    <None Include="$(MSBuildThisFileDirectory)readme.md" />
+  </ItemGroup>
+</Project>
