@@ -6,6 +6,15 @@
 #include "N2kAlertMessagesEnumToStr.h"
 
 
+// Constructor for the NMEA 2000 alert(tN2kAlert) class.
+//_AlertType            The type of alert(e.g., warning, alarm, etc.).
+//_AlertCategory        The category of the alert(e.g., engine, navigation, etc.).
+//_AlertId              The unique identifier for the alert.
+//_TriggerCondition     The condition that triggers the alert.
+//_AlertPriority        The priority level of the alert.
+//_TemporarySilenceSupport Whether temporary silence is supported for this alert.
+//_AcknowledgeSupport   Whether acknowledgment is supported for this alert.
+//_EscalationSupport    Whether escalation is supported for this alert.
 
 tN2kAlert::tN2kAlert(tN2kAlertType _AlertType, tN2kAlertCategory _AlertCategory, uint16_t _AlertId, tN2kAlertTriggerCondition _TriggerCondition, uint8_t _AlertPriority,
 	tN2kAlertYesNo _TemporarySilenceSupport, tN2kAlertYesNo _AcknowledgeSupport, tN2kAlertYesNo _EscalationSupport) :
@@ -28,9 +37,13 @@ tN2kAlert::tN2kAlert(tN2kAlertType _AlertType, tN2kAlertCategory _AlertCategory,
 
 };
 
-// AlertSystem				: UID in the Network for this device
-// AlertSubsystem			: ID for each alert on this device
-// AcknowledgeNetworkId		; Network ID for this alert device
+//Sets parameters for an NMEA 2000 alert system.
+//_Alertsystem          The alert system identifier.
+//_AlertSubsystem       The alert subsystem identifier.
+//_AcknowledgeNetworkId The network ID for acknowledgment.
+//_AlertLanguage        The language for the alert description.
+//_AlertDescription     the alert description.
+//_AlertLocation        the alert location.
 void tN2kAlert::SetAlertSystem(uint8_t _Alertsystem, uint8_t _AlertSubsystem, uint64_t _AcknowledgeNetworkId, tN2kAlertLanguage _AlertLanguage, char* _AlertDescription, char* _AlertLocation) {
 	AlertSystem = _Alertsystem;
 	AlertSubSystem = _AlertSubsystem;
@@ -40,10 +53,10 @@ void tN2kAlert::SetAlertSystem(uint8_t _Alertsystem, uint8_t _AlertSubsystem, ui
 	strlcpy(AlertLocation, _AlertLocation, String_Len);
 }
 
-// This settings are need for linking the alert and senosr together
-// DataSourceInstance		: UID from the device (e.g. temperatur sensor) for wihich this alert will be send
-// DatesourceIndexSource	: ID from the sensor on the device
-// DataSourceNetworkId		: Network id for the sensor device	
+//Configures parameters for linking an NMEA 2000 alert with a specific sensor.
+//_DataSourceInstance   The unique identifier (UID) of the device (e.g., temperature sensor).
+//_DatesourceIndexSource The ID of the sensor on the device (sensor index).
+//_DataSourceNetworkId  The network ID associated with the sensor device.
 void tN2kAlert::SetAlertDataSource(uint8_t _DataSourceInstance, uint8_t _DatesourceIndexSource, uint64_t _DataSourceNetworkId) {
 	DataSourceNetworkId = _DataSourceNetworkId;
 	DataSourceInstance = _DataSourceInstance;
