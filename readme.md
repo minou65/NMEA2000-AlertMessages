@@ -51,7 +51,7 @@ tN2kAlert TemperatureAlert(N2kts_AlertTypeWarning, N2kts_AlertCategoryTechnical,
 
 then you setup the alert
 ```c++
-    TemperatureAlert.SetAlertSystem(1, 1, NMEA2000.GetN2kSource(AlarmDevice), N2kts_AlertLanguageEnglishUS, "Temperatur", "Temperatur engine rooom exceeded the threshold");
-    TemperatureAlert.SetAlertDataSource(1, 1, NMEA2000.GetN2kSource(TemperaturDevice));
-    TemperatureAlert.SetAlertThreshold(N2kts_AlertThresholddMethodGreater, 0, 60);
+TemperatureAlert.SetAlertSystem(1, 1, NMEA2000.GetN2kSource(AlarmDevice), N2kts_AlertLanguageEnglishUS, "Temperatur", "Temperatur engine rooom exceeded the threshold");
+TemperatureAlert.SetAlertDataSource(1, 1, NMEA2000.GetN2kSource(TemperaturDevice));
+TemperatureAlert.SetAlertThreshold(N2kts_AlertThresholddMethodGreater, 0, 60);
 ```
