@@ -402,3 +402,4 @@ FodyWeavers.xsd
 *.sln.iml
 /NMEA2000-AlertMessages.sln
 /NMEA2000-AlertMessages.vcxitems
+/.vscode/settings.json
