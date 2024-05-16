@@ -1,6 +1,55 @@
-// 
-// 
-// 
+/* N2kAlertMessages.cpp
+*
+* Copyright(c) 2024 Andreas Zogg
+*
+*Permission is hereby granted, free of charge, to any person obtaining a
+* copy of this software and associated documentation files(the "Software"),
+* to deal in the Software without restriction, including without limitation
+* the rights to use, copy, modify, merge, publish, distribute, sublicense,
+* and /or sell copies of the Software, and to permit persons to whom the
+* Software is furnished to do so, subject to the following conditions :
+*The above copyright notice and this permission notice shall be included in
+* all copies or substantial portions of the Software.
+*
+*THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+* OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+* /
+
+/************************************************************************//**
+ * \file   N2kAlertMessages.h
+ *  \brief  This File contains all SetXXX functions which will be needed to
+ *          transfer data with a specific PGN.
+ *
+ * This is a collection of functions for handling NMEA2000 bus messages.
+ * Library contains functions to e.g. create message named with PGN like
+ * \ref SetN2kPGN129025 and alias easy for humans to read like \ref
+ * SetN2kLatLonRapid.
+ *
+ * Each SetN2kPNGxxx function sets related message PGN and its default
+ * priority. The default priority can be different for each PGN. So if you
+ * want to change priority on function, you have to do it after Setxxx call.
+ *
+ * Each SetN2kPNGxxx function has a corresponding ParsN2kPGNxxx function which
+ * can extract the data out of an incoming N2k Message. These functions have as
+ * well an inline alias easy for humans to read like \ref ParseN2kPositionRapid.
+ *
+ * The content of the PGNs is specified by the NMEA2000 Standard under
+ *
+ * - https://web.archive.org/web/20220515054117/https://www.nmea.org/Assets/july%202010%20nmea2000_v1-301_app_b_pgn_field_list.pdf
+ * - https://web.archive.org/web/20200918140201/https://www.nmea.org/Assets/20151026%20nmea%202000%20pgn_website_description_list.pdf
+ *
+ * If you do not send anything to NMEA2000 bus, you do not need this library.
+ * Funtions for BUS handling PGN:s like 60928 "ISO Address Claim" has been
+ * defined in bus device library
+ *
+ *  NMEA2000.h
+ *
+ * ********************************************************************/
 
 #include "N2kAlertMessages.h"
 

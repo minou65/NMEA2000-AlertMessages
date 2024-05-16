@@ -1,4 +1,47 @@
-// N2kAlertMessagesEnumToStr.h
+/* N2kAlertMessagesEnumToStr.h
+ *
+ * Copyright (c) 2024 Andreas Zogg
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+*/
+
+/************************************************************************//**
+ * \file    N2kAlertMessagesEnumToStr.h
+ * \brief   This File contains functions to convert enums from N2kAlertMessages.h
+ *          to const char
+ *
+ * This is collection of functions for handling enums of NMEA2000 bus messages.
+ * There are basically 2 functions in the library to convert enums
+ * derived from N2kAlertMessages to const char *:
+ *
+ * #### const char * N2kEnumAlertTypeToStr(enumType enumVal)
+ *
+ *  This functions returns a const char * value thats representing the given
+ *  enum Value. By detecting the enumType, the right text output is
+ *  chosen.
+ *
+ * #### void PrintN2kEnumAlertType (T a, Stream *OutputStream, bool addLF=true)
+ *
+ *  This prints the corresponding text output to the given output stream.
+ *
+ * \note If you do not need enums in clear text, you do not need this library.
+ *
+ * ********************************************************************/
 
 #ifndef _N2KALERTMESSAGESENUMTOSTR_h
 #define _N2KALERTMESSAGESENUMTOSTR_h
