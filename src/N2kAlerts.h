@@ -48,11 +48,11 @@
 
 class tN2kAlert {
 public:
-	tN2kAlert(tN2kAlertType _AlertType, tN2kAlertCategory _AlertCategory, uint16_t _AlertId, tN2kAlertTriggerCondition _TriggerCondition = N2kts_AlertTriggerAuto, uint8_t _AlertPriority = 100,
-		tN2kAlertYesNo _TemporarySilenceSupport = N2kts_AlertNo, tN2kAlertYesNo _AcknowledgeSupport = N2kts_AlertNo, tN2kAlertYesNo _EscalationSupport = N2kts_AlertNo);
-	void SetAlertSystem(uint8_t _Alertsystem, uint8_t _AlertSubsystem, uint64_t _AcknowledgeNetworkId, tN2kAlertLanguage _AlertLanguage, char* _AlertDescription, char* _AlertLocation);
-	void SetAlertDataSource(uint8_t _DataSourceInstance, uint8_t _DatesourceIndexSource, uint64_t _DataSourceNetworkId);
-	void SetAlertThreshold(t2kNAlertThresholdMethod _Method, uint8_t _Format, uint64_t _Level);
+	tN2kAlert(tN2kAlertType AlertType, tN2kAlertCategory AlertCategory, uint16_t AlertId, tN2kAlertTriggerCondition TriggerCondition = N2kts_AlertTriggerAuto, uint8_t AlertPriority = 100,
+		tN2kAlertYesNo TemporarySilenceSupport = N2kts_AlertNo, tN2kAlertYesNo AcknowledgeSupport = N2kts_AlertNo, tN2kAlertYesNo EscalationSupport = N2kts_AlertNo);
+	void SetAlertSystem(uint8_t Alertsystem, uint8_t AlertSubsystem, uint64_t AcknowledgeNetworkId, tN2kAlertLanguage AlertLanguage, char* AlertDescription, char* AlertLocation);
+	void SetAlertDataSource(uint8_t DataSourceInstance, uint8_t DatesourceIndexSource, uint64_t DataSourceNetworkId);
+	void SetAlertThreshold(t2kNAlertThresholdMethod Method, uint8_t Format, uint64_t Level);
 
 	uint16_t GetAlertID();
 	tN2kAlertType GetAlertType();
@@ -82,42 +82,42 @@ public:
 	bool isSilent();
 
 private:
-	uint16_t AlertId;
-	uint8_t AlertPriority;
-	tN2kAlertType AlertType;
-	tN2kAlertCategory AlertCategory;
-	tN2kAlertState AlertState;
-	uint8_t Occurence;
+	uint16_t AlertId_;
+	uint8_t AlertPriority_;
+	tN2kAlertType AlertType_;
+	tN2kAlertCategory AlertCategory_;
+	tN2kAlertState AlertState_;
+	uint8_t Occurence_;
 
-	tN2kAlertLanguage AlertLanguage;
-	char AlertDescription[String_Len + 1];
-	char AlertLocation[String_Len + 1];
+	tN2kAlertLanguage AlertLanguage_;
+	char AlertDescription_[String_Len + 1];
+	char AlertLocation_[String_Len + 1];
 
-	uint8_t AlertSystem;
-	uint8_t AlertSubSystem;
-	uint64_t AcknowledgeNetworkId;
+	uint8_t AlertSystem_;
+	uint8_t AlertSubSystem_;
+	uint64_t AcknowledgeNetworkId_;
 
-	uint64_t DataSourceNetworkId;
-	uint8_t DataSourceInstance;
-	uint8_t DataSourceIndexSource;
+	uint64_t DataSourceNetworkId_;
+	uint8_t DataSourceInstance_;
+	uint8_t DataSourceIndexSource_;
 
-	tN2kAlertYesNo TemporarySilenceSupport;
-	tN2kAlertYesNo AcknowledgeSupport;
-	tN2kAlertYesNo EscalationSupport;
+	tN2kAlertYesNo TemporarySilenceSupport_;
+	tN2kAlertYesNo AcknowledgeSupport_;
+	tN2kAlertYesNo EscalationSupport_;
 
-	tN2kAlertYesNo TemporarySilenceStatus;
-	tN2kAlertYesNo AcknowledgeStatus;
-	tN2kAlertYesNo EscalationStatus;
+	tN2kAlertYesNo TemporarySilenceStatus_;
+	tN2kAlertYesNo AcknowledgeStatus_;
+	tN2kAlertYesNo EscalationStatus_;
 
-	tN2kAlertTriggerCondition TriggerCondition;
-	tN2kAlertThresholdStatus ThresholdStatus;
+	tN2kAlertTriggerCondition TriggerCondition_;
+	tN2kAlertThresholdStatus ThresholdStatus_;
 
-	t2kNAlertThresholdMethod ThresholdMethod;
-	uint8_t ThresholdFormat;
-	uint64_t ThresholdLevel;
+	t2kNAlertThresholdMethod ThresholdMethod_;
+	uint8_t ThresholdFormat_;
+	uint64_t ThresholdLevel_;
 
-	tN2kScheduler TemporarySilenceTimer;
-	uint32_t TemporarySilenceDelay;
+	tN2kScheduler TemporarySilenceTimer_;
+	uint32_t TemporarySilenceDelay_;
 
 	void SetAlertExceeded();
 	void ResetAlert();
