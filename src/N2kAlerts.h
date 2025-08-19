@@ -32,6 +32,7 @@
  * 
  */
 
+
 #ifndef _N2KALERTS_h
 #define _N2KALERTS_h
 
@@ -46,6 +47,31 @@
 
 #define String_Len 50
 
+ /**
+  * @class tN2kAlert
+  * @brief Represents an NMEA 2000 alert object with full alert management functionality.
+  *
+  * The tN2kAlert class provides a comprehensive interface for creating and managing alert objects
+  * according to the NMEA 2000 standard. It allows configuration of alert type, category, priority,
+  * trigger conditions, and supports features such as temporary silence, acknowledgment, and escalation.
+  * The class can be linked to specific sensors and data sources, and supports threshold-based alerting
+  * with flexible comparison methods. It also provides methods for integrating with NMEA 2000 messages,
+  * including setting alert data in outgoing messages and parsing responses from the network.
+  *
+  * Key features:
+  * - Configure alert system, subsystem, language, description, and location
+  * - Link alerts to specific sensor instances and network IDs
+  * - Set and evaluate threshold conditions (greater, lower, equal, etc.)
+  * - Support for temporary silence, acknowledgment, and escalation
+  * - Query current alert state, threshold status, and support flags
+  * - Integrate with NMEA 2000 message handling (set and parse alert messages)
+  *
+  * Typical usage involves creating a tN2kAlert object, configuring its parameters, and periodically
+  * testing sensor values against the configured threshold. The class manages all state transitions
+  * and provides status queries for higher-level application logic.
+  *
+  * For detailed usage and examples, see the library documentation (\ref N2kalerts).
+  */
 class tN2kAlert {
 public:
 	tN2kAlert(tN2kAlertType AlertType, tN2kAlertCategory AlertCategory, uint16_t AlertId, tN2kAlertTriggerCondition TriggerCondition = N2kts_AlertTriggerAuto, uint8_t AlertPriority = 100,
@@ -82,42 +108,42 @@ public:
 	bool isSilent();
 
 private:
-	uint16_t AlertId_;
-	uint8_t AlertPriority_;
-	tN2kAlertType AlertType_;
-	tN2kAlertCategory AlertCategory_;
-	tN2kAlertState AlertState_;
-	uint8_t Occurence_;
+	uint16_t _AlertId;
+	uint8_t _AlertPriority;
+	tN2kAlertType _AlertType;
+	tN2kAlertCategory _AlertCategory;
+	tN2kAlertState _AlertState;
+	uint8_t _Occurence;
 
-	tN2kAlertLanguage AlertLanguage_;
-	char AlertDescription_[String_Len + 1];
-	char AlertLocation_[String_Len + 1];
+	tN2kAlertLanguage _AlertLanguage;
+	char _AlertDescription[String_Len + 1];
+	char _AlertLocation[String_Len + 1];
 
-	uint8_t AlertSystem_;
-	uint8_t AlertSubSystem_;
-	uint64_t AcknowledgeNetworkId_;
+	uint8_t _AlertSystem;
+	uint8_t _AlertSubSystem;
+	uint64_t _AcknowledgeNetworkId;
 
-	uint64_t DataSourceNetworkId_;
-	uint8_t DataSourceInstance_;
-	uint8_t DataSourceIndexSource_;
+	uint64_t _DataSourceNetworkId;
+	uint8_t _DataSourceInstance;
+	uint8_t _DataSourceIndexSource;
 
-	tN2kAlertYesNo TemporarySilenceSupport_;
-	tN2kAlertYesNo AcknowledgeSupport_;
-	tN2kAlertYesNo EscalationSupport_;
+	tN2kAlertYesNo _TemporarySilenceSupport;
+	tN2kAlertYesNo _AcknowledgeSupport;
+	tN2kAlertYesNo _EscalationSupport;
 
-	tN2kAlertYesNo TemporarySilenceStatus_;
-	tN2kAlertYesNo AcknowledgeStatus_;
-	tN2kAlertYesNo EscalationStatus_;
+	tN2kAlertYesNo _TemporarySilenceStatus;
+	tN2kAlertYesNo _AcknowledgeStatus;
+	tN2kAlertYesNo _EscalationStatus;
 
-	tN2kAlertTriggerCondition TriggerCondition_;
-	tN2kAlertThresholdStatus ThresholdStatus_;
+	tN2kAlertTriggerCondition _TriggerCondition;
+	tN2kAlertThresholdStatus _ThresholdStatus;
 
-	t2kNAlertThresholdMethod ThresholdMethod_;
-	uint8_t ThresholdFormat_;
-	uint64_t ThresholdLevel_;
+	t2kNAlertThresholdMethod _ThresholdMethod;
+	uint8_t _ThresholdFormat;
+	uint64_t _ThresholdLevel;
 
-	tN2kScheduler TemporarySilenceTimer_;
-	uint32_t TemporarySilenceDelay_;
+	tN2kScheduler _TemporarySilenceTimer;
+	uint32_t _TemporarySilenceDelay;
 
 	void SetAlertExceeded();
 	void ResetAlert();
