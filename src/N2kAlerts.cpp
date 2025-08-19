@@ -36,249 +36,362 @@
 #include "N2kAlertMessagesEnumToStr.h"
 
 
-// Constructor for the NMEA 2000 alert(tN2kAlert) class.
-// \param _AlertType            The type of alert(e.g., warning, alarm, etc.).
-// \param _AlertCategory        The category of the alert(e.g., engine, navigation, etc.).
-// \param _AlertId              The unique identifier for the alert.
-// \param _TriggerCondition     The condition that triggers the alert.
-// \param _AlertPriority        The priority level of the alert.
-// \param _TemporarySilenceSupport Whether temporary silence is supported for this alert.
-// \param _AcknowledgeSupport   Whether acknowledgment is supported for this alert.
-// \param _EscalationSupport    Whether escalation is supported for this alert.
+ // Constructor for the NMEA 2000 alert (tN2kAlert) class.
+ /**
+  * \brief Creates a new alert object with all relevant parameters.
+  *
+  * Initializes all status and control variables to their default values.
+  * The alert state is set to "Normal", and the threshold status is set to "Normal".
+  * Temporary silence is initially disabled and set to 3600 seconds (1 hour).
+  * The associated timer is initialized accordingly.
+  *
+  * \param AlertType                The type of alert (e.g., warning, alarm).
+  * \param AlertCategory            The category of the alert (e.g., engine, navigation).
+  * \param AlertId                  The unique identifier for the alert.
+  * \param TriggerCondition         The condition that triggers the alert.
+  * \param AlertPriority            The priority level of the alert.
+  * \param TemporarySilenceSupport  Whether temporary silence is supported for this alert.
+  * \param AcknowledgeSupport       Whether acknowledgment is supported for this alert.
+  * \param EscalationSupport        Whether escalation is supported for this alert.
+  */
 tN2kAlert::tN2kAlert(tN2kAlertType AlertType, tN2kAlertCategory AlertCategory, uint16_t AlertId, tN2kAlertTriggerCondition TriggerCondition, uint8_t AlertPriority,
 	tN2kAlertYesNo TemporarySilenceSupport, tN2kAlertYesNo AcknowledgeSupport, tN2kAlertYesNo EscalationSupport) :
-	AlertType_(AlertType),
-	AlertCategory_(AlertCategory),
-	AlertId_(AlertId),
-	AlertPriority_(AlertPriority),
-	TemporarySilenceSupport_(TemporarySilenceSupport),
-	AcknowledgeSupport_(AcknowledgeSupport),
-	EscalationSupport_(EscalationSupport),
-	TemporarySilenceStatus_(N2kts_AlertNo),
-	AcknowledgeStatus_(N2kts_AlertNo),
-	EscalationStatus_(N2kts_AlertNo),
-	Occurence_(0),
-	TriggerCondition_(TriggerCondition) {
+	_AlertType(AlertType),
+	_AlertCategory(AlertCategory),
+	_AlertId(AlertId),
+	_AlertPriority(AlertPriority),
+	_AlertState(N2kts_AlertStateNormal),
+	_TemporarySilenceSupport(TemporarySilenceSupport),
+	_AcknowledgeSupport(AcknowledgeSupport),
+	_EscalationSupport(EscalationSupport),
+	_TemporarySilenceStatus(N2kts_AlertNo),
+	_AcknowledgeStatus(N2kts_AlertNo),
+	_EscalationStatus(N2kts_AlertNo),
+	_Occurence(0),
+	_TriggerCondition(TriggerCondition) {
 
-	ThresholdStatus_ = N2kts_AlertThresholdStatusNormal;
+	_ThresholdStatus = N2kts_AlertThresholdStatusNormal;
 	SetTemporarySilenceTime(3600);
-	TemporarySilenceTimer_ = tN2kScheduler(TemporarySilenceDelay_);
+	_TemporarySilenceTimer = tN2kScheduler(_TemporarySilenceDelay);
 
 };
 
-// Sets parameters for an NMEA 2000 alert system.
-// \param _Alertsystem          The alert system identifier.
-// \param _AlertSubsystem       The alert subsystem identifier.
-// \param _AcknowledgeNetworkId The network ID for acknowledgment.
-// \param _AlertLanguage        The language for the alert description.
-// \param _AlertDescription     the alert description.
-// \param _AlertLocation        the alert location.
+/**
+ * @brief Sets parameters for an NMEA 2000 alert system.
+ *
+ * This method configures the alert system and subsystem, the network ID for acknowledgment,
+ * the language for the alert description, as well as the alert description and location text.
+ * All values are copied or assigned to the corresponding member variables of the alert object.
+ *
+ * @param Alertsystem           The alert system identifier.
+ * @param AlertSubsystem        The alert subsystem identifier.
+ * @param AcknowledgeNetworkId  The network ID used for acknowledgment messages.
+ * @param AlertLanguage         The language used for the alert description.
+ * @param AlertDescription      The alert description text (null-terminated C string).
+ * @param AlertLocation         The alert location text (null-terminated C string).
+ */
 void tN2kAlert::SetAlertSystem(uint8_t Alertsystem, uint8_t AlertSubsystem, uint64_t AcknowledgeNetworkId, tN2kAlertLanguage AlertLanguage, char* AlertDescription, char* AlertLocation) {
-	AlertSystem_ = Alertsystem;
-	AlertSubSystem_ = AlertSubsystem;
-	AcknowledgeNetworkId_ = AcknowledgeNetworkId;
-	AlertLanguage_ = AlertLanguage;
-	strlcpy(AlertDescription_, AlertDescription, String_Len);
-	strlcpy(AlertLocation_, AlertLocation, String_Len);
+	_AlertSystem = Alertsystem;
+	_AlertSubSystem = AlertSubsystem;
+	_AcknowledgeNetworkId = AcknowledgeNetworkId;
+	_AlertLanguage = AlertLanguage;
+	strlcpy(_AlertDescription, AlertDescription, String_Len);
+	strlcpy(_AlertLocation, AlertLocation, String_Len);
 }
 
-// Set parameters for linking an NMEA 2000 alert with a specific sensor.
-// \param _DataSourceInstance   The unique identifier (UID) of the device (e.g., temperature sensor).
-// \param _DatesourceIndexSource The ID of the sensor on the device (sensor index).
-// \param _DataSourceNetworkId  The network ID associated with the sensor device.
+/**
+ * @brief Sets parameters for linking an NMEA 2000 alert with a specific sensor.
+ *
+ * This method assigns the data source information to the alert object.
+ * It links the alert to a specific device (e.g., a temperature sensor) by setting the device instance,
+ * the sensor index on that device, and the network ID associated with the sensor device.
+ *
+ * @param DataSourceInstance      The unique identifier (instance) of the device (e.g., temperature sensor).
+ * @param DatesourceIndexSource   The index of the sensor on the device (sensor index).
+ * @param DataSourceNetworkId     The network ID associated with the sensor device.
+ */
 void tN2kAlert::SetAlertDataSource(uint8_t DataSourceInstance, uint8_t DatesourceIndexSource, uint64_t DataSourceNetworkId) {
-	DataSourceNetworkId_ = DataSourceNetworkId;
-	DataSourceInstance_ = DataSourceInstance;
-	DataSourceIndexSource_ = DatesourceIndexSource;
+	_DataSourceNetworkId = DataSourceNetworkId;
+	_DataSourceInstance = DataSourceInstance;
+	_DataSourceIndexSource = DatesourceIndexSource;
 }
 
-// Set the alert threshold.
-// \param _Method  The method for the threshold (e.g., greater, lower, equal).
-// \param _Format  The format for the threshold (e.g., temperature, pressure, etc.).
-// \param _Level   The threshold level.
+/**
+ * @brief Sets the alert threshold parameters.
+ *
+ * This method configures the threshold detection for the alert. It sets the method
+ * used to compare values (e.g., greater than, less than, equal), the format of the
+ * threshold (such as temperature, pressure, etc.), and the threshold level itself.
+ * These parameters determine when the alert will be triggered based on incoming sensor data.
+ *
+ * @param Method   The method for threshold comparison (e.g., greater, lower, equal).
+ * @param Format   The format for the threshold (e.g., temperature, pressure, etc.).
+ * @param Level    The threshold level value.
+ */
 void tN2kAlert::SetAlertThreshold(t2kNAlertThresholdMethod Method, uint8_t Format, uint64_t Level){
-	ThresholdMethod_ = Method;
-	ThresholdFormat_ = Format;
-	ThresholdLevel_ = Level;
+	_ThresholdMethod = Method;
+	_ThresholdFormat = Format;
+	_ThresholdLevel = Level;
 }
 
-// Returns the alert ID.
+/**
+ * @brief Returns the alert ID.
+ *
+ * This method returns the unique identifier assigned to the alert object.
+ *
+ * @return The alert ID as a 16-bit unsigned integer.
+ */
 uint16_t tN2kAlert::GetAlertID(){
-	return AlertId_;
+	return _AlertId;
 }
 
-// Returns the alert type.
+/**
+ * @brief Returns the alert type.
+ *
+ * This method returns the type of the alert (e.g., warning, alarm).
+ *
+ * @return The alert type as a tN2kAlertType value.
+ */
 tN2kAlertType tN2kAlert::GetAlertType(){
-	return tN2kAlertType(AlertType_);
+	return tN2kAlertType(_AlertType);
 }
 
-// Returns the alert category.
+/**
+ * @brief Returns the alert category.
+ *
+ * This method returns the category of the alert (e.g., engine, navigation).
+ *
+ * @return The alert category as a tN2kAlertCategory value.
+ */
 tN2kAlertCategory tN2kAlert::GetAlertCategory(){
-	return tN2kAlertCategory(AlertCategory_);
+	return tN2kAlertCategory(_AlertCategory);
 }
 
-// Returns the alert system.
+/**
+ * @brief Returns the alert threshold status.
+ *
+ * This method returns the current threshold status of the alert (e.g., normal, exceeded, acknowledged).
+ *
+ * @return The alert threshold status as a tN2kAlertThresholdStatus value.
+ */
 tN2kAlertThresholdStatus tN2kAlert::GetAlertThresholdStatus(){
-	return tN2kAlertThresholdStatus(ThresholdStatus_);
+	return tN2kAlertThresholdStatus(_ThresholdStatus);
 }
 
-// Returns the alert state.
+/**
+ * @brief Returns the alert state.
+ *
+ * This method returns the current state of the alert (e.g., normal, active, silenced, acknowledged).
+ *
+ * @return The alert state as a tN2kAlertState value.
+ */
 tN2kAlertState tN2kAlert::GetAlertState(){
-	return tN2kAlertState(AlertState_);
+	return tN2kAlertState(_AlertState);
 }
 
-// Returns if temporary silence is supported or not.
+/**
+ * @brief Returns whether temporary silence is supported.
+ *
+ * This method returns whether the alert supports temporary silence functionality.
+ *
+ * @return N2kts_AlertYes if supported, otherwise N2kts_AlertNo.
+ */
 tN2kAlertYesNo tN2kAlert::GetTemporarySilenceSupport(){
-	return tN2kAlertYesNo(TemporarySilenceSupport_);
+	return tN2kAlertYesNo(_TemporarySilenceSupport);
 }
 
-// Returns if acknowledgment is supported or not.
+/**
+ * @brief Returns whether acknowledgment is supported.
+ *
+ * This method returns whether the alert supports acknowledgment functionality.
+ *
+ * @return N2kts_AlertYes if supported, otherwise N2kts_AlertNo.
+ */
 tN2kAlertYesNo tN2kAlert::GetAcknowledgeSupport(){
-	return tN2kAlertYesNo(AcknowledgeSupport_);
+	return tN2kAlertYesNo(_AcknowledgeSupport);
 }
 
-// Returns if escalation is supported or not.
+/**
+ * @brief Returns whether escalation is supported.
+ *
+ * This method returns whether the alert supports escalation functionality.
+ *
+ * @return N2kts_AlertYes if supported, otherwise N2kts_AlertNo.
+ */
 tN2kAlertYesNo tN2kAlert::GetEscalationSupport(){
-	return tN2kAlertYesNo(EscalationSupport_);
+	return tN2kAlertYesNo(_EscalationSupport);
 }
 
-// Returns if temorary silence is active or not.
+/**
+ * @brief Returns whether temporary silence is currently active.
+ *
+ * This method returns the current status of temporary silence for the alert.
+ *
+ * @return N2kts_AlertYes if temporary silence is active, otherwise N2kts_AlertNo.
+ */
 tN2kAlertYesNo tN2kAlert::GetTemporarySilenceStatus(){
-	return tN2kAlertYesNo(TemporarySilenceStatus_);
+	return tN2kAlertYesNo(_TemporarySilenceStatus);
 }
 
-// Returns if acknowledgment is active or not.
+/**
+ * @brief Returns whether acknowledgment is currently active.
+ *
+ * This method returns the current acknowledgment status for the alert.
+ *
+ * @return N2kts_AlertYes if acknowledged, otherwise N2kts_AlertNo.
+ */
 tN2kAlertYesNo tN2kAlert::GetAcknowledgeStatus(){
-	return tN2kAlertYesNo(AcknowledgeStatus_);
+	return tN2kAlertYesNo(_AcknowledgeStatus);
 }
 
-// Returns if escalation is active or not.
+/**
+ * @brief Returns whether escalation is currently active.
+ *
+ * This method returns the current escalation status for the alert.
+ *
+ * @return N2kts_AlertYes if escalation is active, otherwise N2kts_AlertNo.
+ */
 tN2kAlertYesNo tN2kAlert::GetEscalationStatus(){
-	return tN2kAlertYesNo(EscalationStatus_);
+	return tN2kAlertYesNo(_EscalationStatus);
 }
 
-// Set it the alert is exceeded.
+/**
+ * @brief Sets the alert as exceeded if the threshold condition is met.
+ *
+ * This method updates the alert's internal state when the threshold condition is exceeded.
+ * If the threshold status was previously normal, it is set to exceeded and the occurrence counter is incremented.
+ * If the alert is in the exceeded state, the alert state is set to active, silenced, or acknowledged
+ * depending on the current silence and acknowledgment status. If the occurrence counter exceeds 250,
+ * it is reset to 0 to prevent overflow.
+ */
 void tN2kAlert::SetAlertExceeded() {
 
-	if (Occurence_ > 250) Occurence_ = 0;
+	if (_Occurence > 250) _Occurence = 0; // reset occurence if it is too high
 
-	if (ThresholdStatus_ == N2kts_AlertThresholdStatusNormal) {
-		ThresholdStatus_ = N2kts_AlertThresholdStatusExceeded;
-		Occurence_++;
+	if (_ThresholdStatus == N2kts_AlertThresholdStatusNormal) {
+		_ThresholdStatus = N2kts_AlertThresholdStatusExceeded;
+		_Occurence++;
 	}
 
-	if (ThresholdStatus_ == N2kts_AlertThresholdStatusExceeded) {
-		AlertState_ = N2kts_AlertStateActive;
-		if (TemporarySilenceStatus_ == N2kts_AlertYes) {
-			AlertState_ == N2kts_AlertStateSilenced;
+	if (_ThresholdStatus == N2kts_AlertThresholdStatusExceeded) {
+		_AlertState = N2kts_AlertStateActive;
+		if (_TemporarySilenceStatus == N2kts_AlertYes) {
+			_AlertState = N2kts_AlertStateSilenced;
 		}
 
-		if (AcknowledgeStatus_ == N2kts_AlertYes) {
-			AlertState_ == N2kts_AlertStateAcknowledged;
-			ThresholdStatus_ = N2kts_AlertThresholdStatusAcknowledged;
+		if (_AcknowledgeStatus == N2kts_AlertYes) {
+			_AlertState = N2kts_AlertStateAcknowledged;
+			_ThresholdStatus = N2kts_AlertThresholdStatusAcknowledged;
 		}
 	}
 }
 
-// Reset the alert.
+/**
+ * @brief Resets the alert to its normal state.
+ *
+ * This method resets the alert's threshold status and state to normal.
+ * The acknowledgment status is also cleared. Other statuses, such as temporary silence,
+ * are not affected by this method.
+ */
 void tN2kAlert::ResetAlert() {
 
-	ThresholdStatus_ = N2kts_AlertThresholdStatusNormal;
-	AlertState_ = N2kts_AlertStateNormal;
+	_ThresholdStatus = N2kts_AlertThresholdStatusNormal;
+	_AlertState = N2kts_AlertStateNormal;
 
-	AcknowledgeStatus_ = N2kts_AlertNo;
+	_AcknowledgeStatus = N2kts_AlertNo;
 }
 
-// Test the alert threshold.
-// \param v The value to test against the threshold.
-// \return The status of the alert threshold.
+/**
+ * @brief Tests a value against the alert threshold and updates the alert state.
+ *
+ * This method compares the given value to the configured threshold using the selected method
+ * (greater, lower, or equal). If the threshold is exceeded, the alert is set as exceeded;
+ * otherwise, it is reset. If the temporary silence timer has expired, the silence status is cleared.
+ *
+ * @param v The value to test against the threshold.
+ * @return The current threshold status after evaluation.
+ */
 tN2kAlertThresholdStatus tN2kAlert::TestAlertThreshold(uint64_t v){
-	if (ThresholdMethod_ == N2kts_AlertThresholddMethodGreater) {
-		if (v > ThresholdLevel_) {
-			SetAlertExceeded();
-		}
-		else {
-			ResetAlert();
-		}
+	switch (_ThresholdMethod) {
+	case N2kts_AlertThresholdMethodGreater:
+		(v > _ThresholdLevel) ? SetAlertExceeded() : ResetAlert();
+		break;
+	case N2kts_AlertThresholdMethodLower:
+		(v < _ThresholdLevel) ? SetAlertExceeded() : ResetAlert();
+		break;
+	case N2kts_AlertThresholdMethodEqual:
+		(v == _ThresholdLevel) ? SetAlertExceeded() : ResetAlert();
+		break;
+}
+
+	if (_TemporarySilenceTimer.IsTime()) {
+		_TemporarySilenceStatus = N2kts_AlertNo;
 	}
 
-	if (ThresholdMethod_ == N2kts_AlertThresholdMethodLower) {
-		if (v < ThresholdLevel_) {
-			SetAlertExceeded();
-		}
-		else {
-			ResetAlert();
-		}
-	}
-
-	if (ThresholdMethod_ == N2kts_AlertThresholdMethodEqual) {
-		if (v == ThresholdLevel_) {
-			SetAlertExceeded();
-		}
-		else {
-			ResetAlert();
-		}
-	}
-
-	if (TemporarySilenceTimer_.IsTime()) {
-		TemporarySilenceStatus_ = N2kts_AlertNo;
-	}
-
-	return tN2kAlertThresholdStatus(ThresholdStatus_);
+	return tN2kAlertThresholdStatus(_ThresholdStatus);
 }
 
 // set the alert text.
 // \param N2kMsg The NMEA 2000 message to set the alert text.
 void tN2kAlert::SetN2kAlertText(tN2kMsg &N2kMsg){
-	SetN2kPGN126985(N2kMsg, AlertType_, AlertCategory_, AlertSystem_, AlertSubSystem_, AlertId_, 
-		DataSourceNetworkId_, DataSourceInstance_, DataSourceIndexSource_, 
-		Occurence_, AlertLanguage_, AlertDescription_, AlertLocation_);
+	SetN2kPGN126985(N2kMsg, _AlertType, _AlertCategory, _AlertSystem, _AlertSubSystem, _AlertId, 
+		_DataSourceNetworkId, _DataSourceInstance, _DataSourceIndexSource, 
+		_Occurence, _AlertLanguage, _AlertDescription, _AlertLocation);
 }
 
 // set the alert.
 // \param N2kMsg The NMEA 2000 message to set the alert.
 void tN2kAlert::SetN2kAlert(tN2kMsg &N2kMsg){
-	SetN2kPGN126983(N2kMsg, AlertType_, AlertCategory_, AlertSystem_, AlertSubSystem_, AlertId_, 
-		DataSourceNetworkId_, DataSourceInstance_, DataSourceIndexSource_, 
-		Occurence_, AcknowledgeNetworkId_, TriggerCondition_, ThresholdStatus_, AlertPriority_, AlertState_,
-		TemporarySilenceStatus_, AcknowledgeStatus_, EscalationStatus_, 
-		TemporarySilenceSupport_, AcknowledgeSupport_, EscalationSupport_);
+	SetN2kPGN126983(N2kMsg, _AlertType, _AlertCategory, _AlertSystem, _AlertSubSystem, _AlertId, 
+		_DataSourceNetworkId, _DataSourceInstance, _DataSourceIndexSource, 
+		_Occurence, _AcknowledgeNetworkId, _TriggerCondition, _ThresholdStatus, _AlertPriority, _AlertState,
+		_TemporarySilenceStatus, _AcknowledgeStatus, _EscalationStatus, 
+		_TemporarySilenceSupport, _AcknowledgeSupport, _EscalationSupport);
 }
 
 // set the temporary silence time.
 // \param seconds The time in seconds to set the temporary silence time.
 void tN2kAlert::SetTemporarySilenceTime(uint16_t seconds){
-	TemporarySilenceDelay_ = seconds * 1000;
+	_TemporarySilenceDelay = seconds * 1000;
 }
 
-// parse the alert response.
-// \param N2kMsg The NMEA 2000 message to parse the alert response.
-// \return True if the alert response was parsed successfully.
+/**
+ * @brief Parses an incoming NMEA 2000 alert response message.
+ *
+ * This method processes a received NMEA 2000 message and updates the alert object's status
+ * based on the response command contained in the message. It checks if the alert system and
+ * subsystem match the current alert, and then handles acknowledgment, temporary silence, or
+ * test commands accordingly. The method returns true if the message was successfully parsed
+ * and processed for this alert.
+ *
+ * @param N2kMsg The NMEA 2000 message to parse for an alert response.
+ * @return True if the alert response was parsed and processed successfully, otherwise false.
+ */
 bool tN2kAlert::ParseAlertResponse(const tN2kMsg &N2kMsg){
-	tN2kAlertType _AlertType;
-	tN2kAlertCategory _AlertCategory;
-	unsigned char _AlertSystem;
-	unsigned char _AlertSubSystem;
-	unsigned int _AlertID;
-	uint64_t _SourceNetworkID;
-	unsigned char _DataSourceInstance;
-	unsigned char _DataSourceIndex;
-	unsigned char _AlertOccurence;
-	uint64_t _AcknowledgeNetworkID;
-	tN2kAlertResponseCommand _ResponseCommand;
+	tN2kAlertType AlertType;
+	tN2kAlertCategory AlertCategory;
+	unsigned char AlertSystem;
+	unsigned char AlertSubSystem;
+	unsigned int AlertID;
+	uint64_t SourceNetworkID;
+	unsigned char DataSourceInstance;
+	unsigned char DataSourceIndex;
+	unsigned char AlertOccurence;
+	uint64_t AcknowledgeNetworkID;
+	tN2kAlertResponseCommand ResponseCommand;
 
-	if (ParseN2kAlertResponse(N2kMsg, _AlertType, _AlertCategory, _AlertSystem, _AlertSubSystem, _AlertID, 
-		_SourceNetworkID, _DataSourceInstance, _DataSourceIndex, _AlertOccurence, _AcknowledgeNetworkID, 
-		_ResponseCommand)) {
-		if ((AlertSystem_ == _AlertSystem) && (AlertSubSystem_ == _AlertSubSystem)) {
-			switch (_ResponseCommand) {
+	if (ParseN2kAlertResponse(N2kMsg, AlertType, AlertCategory, AlertSystem, AlertSubSystem, AlertID, 
+		SourceNetworkID, DataSourceInstance, DataSourceIndex, AlertOccurence, AcknowledgeNetworkID, 
+		ResponseCommand)) {
+		if ((AlertSystem == _AlertSystem) && (AlertSubSystem == _AlertSubSystem)) {
+			switch (ResponseCommand) {
 				case N2kts_AlertResponseAcknowledge:
-					AcknowledgeStatus_ = N2kts_AlertYes;
+					_AcknowledgeStatus = N2kts_AlertYes;
 					break;
 
 				case N2kts_AlertResponseTemporarySilence:
-					TemporarySilenceStatus_ = N2kts_AlertYes;
-					TemporarySilenceTimer_.FromNow(TemporarySilenceDelay_);
+					_TemporarySilenceStatus = N2kts_AlertYes;
+					_TemporarySilenceTimer.FromNow(_TemporarySilenceDelay);
 					break;
 
 				case N2kts_AlertResponseTestCommandOff:
@@ -296,20 +409,43 @@ bool tN2kAlert::ParseAlertResponse(const tN2kMsg &N2kMsg){
 	return false;
 }
 
-// return true if the alert is active.
+/**
+ * @brief Returns whether the alert is currently active.
+ *
+ * This method checks if the alert threshold status is not normal, indicating that
+ * the alert condition has been triggered.
+ *
+ * @return true if the alert is active, otherwise false.
+ */
 bool tN2kAlert::isAlert(){
-	return ThresholdStatus_ != N2kts_AlertThresholdStatusNormal;
+	return _ThresholdStatus != N2kts_AlertThresholdStatusNormal;
 }
 
-// return true if the alert is acknowledged.
+/**
+ * @brief Returns whether the alert has been acknowledged.
+ *
+ * This method checks if the acknowledgment status is set, indicating that
+ * the alert has been acknowledged by the user or system.
+ *
+ * @return true if the alert is acknowledged, otherwise false.
+ */
 bool tN2kAlert::isAcknowledged(){
-	return AcknowledgeStatus_ = N2kts_AlertYes;
+	return _AcknowledgeStatus == N2kts_AlertYes;
 }
 
-// return true if the alert is silenced.
+/**
+ * @brief Returns whether the alert is currently silenced.
+ *
+ * This method checks if the temporary silence status is set, indicating that
+ * the alert is currently in a silenced state.
+ *
+ * @return true if the alert is silenced, otherwise false.
+ */
 bool tN2kAlert::isSilent(){
-	return TemporarySilenceStatus_ = N2kts_AlertYes;
+	return _TemporarySilenceStatus == N2kts_AlertYes;
 }
-;
+
+
+
 
 
