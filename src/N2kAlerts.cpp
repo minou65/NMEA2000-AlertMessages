@@ -74,7 +74,46 @@ tN2kAlert::tN2kAlert(tN2kAlertType AlertType, tN2kAlertCategory AlertCategory, u
 	SetTemporarySilenceTime(3600);
 	_TemporarySilenceTimer = tN2kScheduler(_TemporarySilenceDelay);
 
-};
+}
+
+tN2kAlert::tN2kAlert(
+	tN2kAlertType AlertType,
+	tN2kAlertCategory AlertCategory,
+	uint16_t AlertId,
+	tN2kAlertTriggerCondition TriggerCondition,
+	uint8_t AlertPriority,
+	tN2kAlertYesNo TemporarySilenceSupport,
+	tN2kAlertYesNo AcknowledgeSupport,
+	tN2kAlertYesNo EscalationSupport,
+	uint8_t OccurenceThreshold
+) :
+	_AlertType(AlertType),
+	_AlertCategory(AlertCategory),
+	_AlertId(AlertId),
+	_AlertPriority(AlertPriority),
+	_AlertState(N2kts_AlertStateNormal),
+	_TemporarySilenceSupport(TemporarySilenceSupport),
+	_AcknowledgeSupport(AcknowledgeSupport),
+	_EscalationSupport(EscalationSupport),
+	_TemporarySilenceStatus(N2kts_AlertNo),
+	_AcknowledgeStatus(N2kts_AlertNo),
+	_EscalationStatus(N2kts_AlertNo),
+	_Occurence(0),
+	_OccurenceThreshold(OccurenceThreshold),
+	_TriggerCondition(TriggerCondition)
+{
+	_ThresholdStatus = N2kts_AlertThresholdStatusNormal;
+	SetTemporarySilenceTime(3600);
+	_TemporarySilenceTimer = tN2kScheduler(_TemporarySilenceDelay);
+
+	if (OccurenceThreshold == 0) {
+		_OccurenceThreshold = 1; // Ensure that the threshold is at least 1
+	}
+	
+	if (OccurenceThreshold > 250) {
+		_OccurenceThreshold = 1; // Cap the threshold to a maximum of 250
+	}
+}
 
 /**
  * @brief Sets parameters for an NMEA 2000 alert system.
@@ -265,12 +304,13 @@ tN2kAlertYesNo tN2kAlert::GetEscalationStatus(){
  * it is reset to 0 to prevent overflow.
  */
 void tN2kAlert::SetAlertExceeded() {
-
 	if (_Occurence > 250) _Occurence = 0; // reset occurence if it is too high
 
 	if (_ThresholdStatus == N2kts_AlertThresholdStatusNormal) {
-		_ThresholdStatus = N2kts_AlertThresholdStatusExceeded;
 		_Occurence++;
+		if (_Occurence >= _OccurenceThreshold) {
+			_ThresholdStatus = N2kts_AlertThresholdStatusExceeded;
+		}
 	}
 
 	if (_ThresholdStatus == N2kts_AlertThresholdStatusExceeded) {
@@ -278,7 +318,6 @@ void tN2kAlert::SetAlertExceeded() {
 		if (_TemporarySilenceStatus == N2kts_AlertYes) {
 			_AlertState = N2kts_AlertStateSilenced;
 		}
-
 		if (_AcknowledgeStatus == N2kts_AlertYes) {
 			_AlertState = N2kts_AlertStateAcknowledged;
 			_ThresholdStatus = N2kts_AlertThresholdStatusAcknowledged;
@@ -294,11 +333,10 @@ void tN2kAlert::SetAlertExceeded() {
  * are not affected by this method.
  */
 void tN2kAlert::ResetAlert() {
-
 	_ThresholdStatus = N2kts_AlertThresholdStatusNormal;
 	_AlertState = N2kts_AlertStateNormal;
-
 	_AcknowledgeStatus = N2kts_AlertNo;
+	_Occurence = 0;
 }
 
 /**
@@ -353,6 +391,17 @@ void tN2kAlert::SetN2kAlert(tN2kMsg &N2kMsg){
 // \param seconds The time in seconds to set the temporary silence time.
 void tN2kAlert::SetTemporarySilenceTime(uint16_t seconds){
 	_TemporarySilenceDelay = seconds * 1000;
+}
+
+void tN2kAlert::SetOccurenceThreshold(uint8_t threshold) {
+	_OccurenceThreshold = threshold;
+	if (_OccurenceThreshold == 0) {
+		_OccurenceThreshold = 1; // prevent division by zero
+	}
+}
+
+uint8_t tN2kAlert::GetOccurenceThreshold() const {
+	return _OccurenceThreshold;
 }
 
 /**

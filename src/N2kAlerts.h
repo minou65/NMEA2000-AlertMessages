@@ -76,6 +76,9 @@ class tN2kAlert {
 public:
 	tN2kAlert(tN2kAlertType AlertType, tN2kAlertCategory AlertCategory, uint16_t AlertId, tN2kAlertTriggerCondition TriggerCondition = N2kts_AlertTriggerAuto, uint8_t AlertPriority = 100,
 		tN2kAlertYesNo TemporarySilenceSupport = N2kts_AlertNo, tN2kAlertYesNo AcknowledgeSupport = N2kts_AlertNo, tN2kAlertYesNo EscalationSupport = N2kts_AlertNo);
+	tN2kAlert(tN2kAlertType AlertType, tN2kAlertCategory AlertCategory, uint16_t AlertId, tN2kAlertTriggerCondition TriggerCondition = N2kts_AlertTriggerAuto, uint8_t AlertPriority = 100,
+		tN2kAlertYesNo TemporarySilenceSupport = N2kts_AlertNo, tN2kAlertYesNo AcknowledgeSupport = N2kts_AlertNo, tN2kAlertYesNo EscalationSupport = N2kts_AlertNo, uint8_t OccurenceThreshold = 1);
+
 	void SetAlertSystem(uint8_t Alertsystem, uint8_t AlertSubsystem, uint64_t AcknowledgeNetworkId, tN2kAlertLanguage AlertLanguage, char* AlertDescription, char* AlertLocation);
 	void SetAlertDataSource(uint8_t DataSourceInstance, uint8_t DatesourceIndexSource, uint64_t DataSourceNetworkId);
 	void SetAlertThreshold(t2kNAlertThresholdMethod Method, uint8_t Format, uint64_t Level);
@@ -101,6 +104,9 @@ public:
 
 	void SetTemporarySilenceTime(uint16_t seconds);
 
+	void SetOccurenceThreshold(uint8_t threshold);
+	uint8_t GetOccurenceThreshold() const;
+
 	bool ParseAlertResponse(const tN2kMsg &N2kMsg);
 
 	bool isAlert();
@@ -113,7 +119,8 @@ private:
 	tN2kAlertType _AlertType;
 	tN2kAlertCategory _AlertCategory;
 	tN2kAlertState _AlertState;
-	uint8_t _Occurence;
+	uint8_t _Occurence; // Occurence counter for the alert, used to track how many times the alert has been triggered
+	uint8_t _OccurenceThreshold; // Threshold for the number of occurrences before the alert is considered exceeded
 
 	tN2kAlertLanguage _AlertLanguage;
 	char _AlertDescription[String_Len + 1];
