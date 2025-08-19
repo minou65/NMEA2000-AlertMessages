@@ -107,6 +107,9 @@ public:
 	void SetOccurenceThreshold(uint8_t threshold);
 	uint8_t GetOccurenceThreshold() const;
 
+	void SetAlertExceeded();
+	void ResetAlert();
+
 	bool ParseAlertResponse(const tN2kMsg &N2kMsg);
 
 	bool isAlert();
@@ -152,8 +155,7 @@ private:
 	tN2kScheduler _TemporarySilenceTimer;
 	uint32_t _TemporarySilenceDelay;
 
-	void SetAlertExceeded();
-	void ResetAlert();
+
 };
 
 #endif
