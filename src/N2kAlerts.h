@@ -45,8 +45,6 @@
 #include "N2kAlertMessages.h"
 #include <N2kTimer.h>
 
-#define String_Len 50
-
  /**
   * @class tN2kAlert
   * @brief Represents an NMEA 2000 alert object with full alert management functionality.
@@ -126,8 +124,8 @@ private:
 	uint8_t _OccurenceThreshold; // Threshold for the number of occurrences before the alert is considered exceeded
 
 	tN2kAlertLanguage _AlertLanguage;
-	char _AlertDescription[String_Len + 1];
-	char _AlertLocation[String_Len + 1];
+	char _AlertDescription[81];
+	char _AlertLocation[41];
 
 	uint8_t _AlertSystem;
 	uint8_t _AlertSubSystem;
