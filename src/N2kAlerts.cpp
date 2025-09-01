@@ -134,8 +134,8 @@ void tN2kAlert::SetAlertSystem(uint8_t Alertsystem, uint8_t AlertSubsystem, uint
 	_AlertSubSystem = AlertSubsystem;
 	_AcknowledgeNetworkId = AcknowledgeNetworkId;
 	_AlertLanguage = AlertLanguage;
-	strlcpy(_AlertDescription, AlertDescription, String_Len);
-	strlcpy(_AlertLocation, AlertLocation, String_Len);
+	strlcpy(_AlertDescription, AlertDescription, sizeof(_AlertDescription));
+	strlcpy(_AlertLocation, AlertLocation, sizeof(_AlertLocation));
 }
 
 /**
@@ -304,6 +304,13 @@ tN2kAlertYesNo tN2kAlert::GetEscalationStatus(){
  * it is reset to 0 to prevent overflow.
  */
 void tN2kAlert::SetAlertExceeded() {
+	//Serial.print("tN2kAlert::SetAlertExceeded for Alert ID: "); Serial.println(_AlertId);
+	//Serial.print("Current Threshold Status: "); Serial.println(N2kEnumAlertTypeToStr(tN2kAlertThresholdStatus(_ThresholdStatus)));
+	//Serial.print("Current Alert State: "); Serial.println(N2kEnumAlertTypeToStr(tN2kAlertState(_AlertState)));
+	//Serial.print("Current Occurence: "); Serial.println(_Occurence);
+	//Serial.print("Current Occurence Threshold: "); Serial.println(_OccurenceThreshold);
+
+
 	if (_Occurence > 250) _Occurence = 0; // reset occurence if it is too high
 
 	if (_ThresholdStatus == N2kts_AlertThresholdStatusNormal) {
@@ -416,7 +423,7 @@ uint8_t tN2kAlert::GetOccurenceThreshold() const {
  * @param N2kMsg The NMEA 2000 message to parse for an alert response.
  * @return True if the alert response was parsed and processed successfully, otherwise false.
  */
-bool tN2kAlert::ParseAlertResponse(const tN2kMsg &N2kMsg){
+bool tN2kAlert::ParseAlertResponse(const tN2kMsg &N2kMsg) {
 	tN2kAlertType AlertType;
 	tN2kAlertCategory AlertCategory;
 	unsigned char AlertSystem;
@@ -429,32 +436,29 @@ bool tN2kAlert::ParseAlertResponse(const tN2kMsg &N2kMsg){
 	uint64_t AcknowledgeNetworkID;
 	tN2kAlertResponseCommand ResponseCommand;
 
-	if (ParseN2kAlertResponse(N2kMsg, AlertType, AlertCategory, AlertSystem, AlertSubSystem, AlertID, 
-		SourceNetworkID, DataSourceInstance, DataSourceIndex, AlertOccurence, AcknowledgeNetworkID, 
+	if (ParseN2kAlertResponse(N2kMsg, AlertType, AlertCategory, AlertSystem, AlertSubSystem, AlertID,
+		SourceNetworkID, DataSourceInstance, DataSourceIndex, AlertOccurence, AcknowledgeNetworkID,
 		ResponseCommand)) {
-		if ((AlertSystem == _AlertSystem) && (AlertSubSystem == _AlertSubSystem)) {
+		if ((AlertSystem == _AlertSystem) && (AlertSubSystem == _AlertSubSystem) && (AlertID == _AlertId)) {
 			switch (ResponseCommand) {
-				case N2kts_AlertResponseAcknowledge:
-					_AcknowledgeStatus = N2kts_AlertYes;
-					break;
+			case N2kts_AlertResponseAcknowledge:
+				_AcknowledgeStatus = N2kts_AlertYes;
+				break;
 
-				case N2kts_AlertResponseTemporarySilence:
-					_TemporarySilenceStatus = N2kts_AlertYes;
-					_TemporarySilenceTimer.FromNow(_TemporarySilenceDelay);
-					break;
+			case N2kts_AlertResponseTemporarySilence:
+				_TemporarySilenceStatus = N2kts_AlertYes;
+				_TemporarySilenceTimer.FromNow(_TemporarySilenceDelay);
+				break;
 
-				case N2kts_AlertResponseTestCommandOff:
-					break;
+			case N2kts_AlertResponseTestCommandOff:
+				break;
 
-				case N2kts_AlertResponseTestCommandOn:
-					break;
-					
+			case N2kts_AlertResponseTestCommandOn:
+				break;
 			}
+			return true;
 		}
-		return true;
-
 	}
-
 	return false;
 }
 
