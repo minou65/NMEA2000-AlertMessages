@@ -124,8 +124,8 @@ private:
 	uint8_t _OccurenceThreshold; // Threshold for the number of occurrences before the alert is considered exceeded
 
 	tN2kAlertLanguage _AlertLanguage;
-	char _AlertDescription[81];
-	char _AlertLocation[41];
+	char _AlertDescription[256];
+	char _AlertLocation[256];
 
 	uint8_t _AlertSystem;
 	uint8_t _AlertSubSystem;
