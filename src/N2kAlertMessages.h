@@ -368,8 +368,8 @@ extern void SetN2kPGN126985(
     unsigned char DataSourceIndex,
     unsigned char AlertOccurence,
     tN2kAlertLanguage AlertLanguage,
-    char* AlertTextDescription,
-    char* AlertLocationTextDescription
+    const char* AlertTextDescription,
+    const char* AlertLocationTextDescription
 );
 
 /************************************************************************//**
@@ -390,8 +390,8 @@ inline void SetN2kAlertText(
     unsigned char DataSourceIndex,
     unsigned char AlertOccurence,
     tN2kAlertLanguage AlertLanguage,
-    char* AlertTextDescription,
-    char* AlertLocationTextDescription
+    const char* AlertTextDescription,
+    const char* AlertLocationTextDescription
 ) {
     SetN2kPGN126985(N2kMsg, AlertType, AlertCategory, AlertSystem, AlertSubSystem, AlertID,
         SourceNetworkID, DataSourceInstance, DataSourceIndex, AlertOccurence, AlertLanguage,
