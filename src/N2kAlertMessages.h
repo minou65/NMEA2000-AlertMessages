@@ -417,25 +417,27 @@ inline void SetN2kAlertText(
  * @param[out] AlertOccurence                Number of times the alert has occurred.
  * @param[out] AlertLanguage                 Language of the alert text.
  * @param[out] AlertTextDescription          Description of the alert.
+ * @param[in]  AlertTextDescriptionSize      Size of the buffer for the alert text description.
  * @param[out] AlertLocationTextDescription  Description of the alert location.
+ * @param[in]  AlertLocationTextDescriptionSize Size of the buffer for the alert location text description.
  *
  * @retval true  The message was successfully parsed.
  * @retval false The message could not be parsed.
  */
 extern bool ParseN2kPGN126985(
-    const tN2kMsg &N2kMsg,
-    tN2kAlertType &AlertType,
-    tN2kAlertCategory &AlertCategory,
-    unsigned char &AlertSystem,
-    unsigned char &AlertSubSystem,
-    unsigned int &AlertID,
-    uint64_t &SourceNetworkID,
-    unsigned char &DataSourceInstance,
-    unsigned char &DataSourceIndex,
-    unsigned char &AlertOccurence,
-    tN2kAlertLanguage &AlertLanguage,
-    char* &AlertTextDescription,
-    char* &AlertLocationTextDescription
+    const tN2kMsg& N2kMsg,
+    tN2kAlertType& AlertType,
+    tN2kAlertCategory& AlertCategory,
+    unsigned char& AlertSystem,
+    unsigned char& AlertSubSystem,
+    unsigned int& AlertID,
+    uint64_t& SourceNetworkID,
+    unsigned char& DataSourceInstance,
+    unsigned char& DataSourceIndex,
+    unsigned char& AlertOccurence,
+    tN2kAlertLanguage& AlertLanguage,
+    char* AlertTextDescription, size_t AlertTextDescriptionSize,
+    char* AlertLocationTextDescription, size_t AlertLocationTextDescriptionSize
 );
 
 #endif

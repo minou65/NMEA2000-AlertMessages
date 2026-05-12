@@ -1,4 +1,4 @@
-/* N2kAlertMessages.cpp
+﻿/* N2kAlertMessages.cpp
 *
 * Copyright(c) 2024 Andreas Zogg
 *
@@ -56,7 +56,7 @@
 //*****************************************************************************
 // This PGN is used to report the status of an aler
 void SetN2kPGN126983(
-	tN2kMsg &N2kMsg,
+	tN2kMsg& N2kMsg,
 	tN2kAlertType AlertType,
 	tN2kAlertCategory AlertCategory,
 	unsigned char AlertSystem,
@@ -82,25 +82,56 @@ void SetN2kPGN126983(
 
 	N2kMsg.SetPGN(126983L);
 	N2kMsg.Priority = 2;
+
+	// Byte 1: AlertCategory (Bits 7–4) + AlertType (Bits 3–0)
 	v = (AlertCategory << 4) | (AlertType);
 	N2kMsg.AddByte(v);
+
+	// Byte 2–3–4
 	N2kMsg.AddByte(AlertSystem);
 	N2kMsg.AddByte(AlertSubSystem);
 	N2kMsg.Add2ByteUInt(AlertID);
+
+	// Byte 5–12: SourceNetworkID (8 Bytes)
 	N2kMsg.AddUInt64(SourceNetworkID);
+
+	// Byte 13–15
 	N2kMsg.AddByte(DataSourceInstance);
 	N2kMsg.AddByte(DataSourceIndex);
 	N2kMsg.AddByte(AlertOccurence);
 
-	v = (0x03 << 6) | (EscalationSupport << 5) | (AcknowledgeSupport << 4) | (TemporarySilenceSupport << 3) | (EscalationStatus << 2) | (AcknowledgeStatus << 1) | TemporarySilenceStatus;
+	// Byte 16: Status + Support + RESERVED
+	//
+	// Bits 7–6 = RESERVED → müssen 0 sein (0b00)
+	// Bit 5 = EscalationSupport
+	// Bit 4 = AcknowledgeSupport
+	// Bit 3 = TemporarySilenceSupport
+	// Bit 2 = EscalationStatus
+	// Bit 1 = AcknowledgeStatus
+	// Bit 0 = TemporarySilenceStatus
+	//
+	v = (0x00 << 6) | // RESERVED = 00
+		(EscalationSupport << 5) |
+		(AcknowledgeSupport << 4) |
+		(TemporarySilenceSupport << 3) |
+		(EscalationStatus << 2) |
+		(AcknowledgeStatus << 1) |
+		(TemporarySilenceStatus);
 	N2kMsg.AddByte(v);
+
+	// Byte 17–24: AcknowledgeNetworkID (8 Bytes)
 	N2kMsg.AddUInt64(AcknowledgeNetworkID);
 
-	v = (ThresholdStatus << 4) | (TriggerCondition);
+	// Byte 25: ThresholdStatus (Bits 7–4) + TriggerCondition (Bits 3–0)
+	v = (ThresholdStatus << 4) | 
+		(TriggerCondition);
 	N2kMsg.AddByte(v);
+
+	// Byte 26–27
 	N2kMsg.AddByte(AlertPriority);
 	N2kMsg.AddByte(AlertState);
-};
+}
+
 
 bool ParseN2kPGN126983(
 	const tN2kMsg &N2kMsg,
@@ -185,7 +216,7 @@ void SetN2kPGN126984(
 	N2kMsg.AddByte(AlertOccurence);
 	N2kMsg.AddUInt64(AcknowledgeNetworkID);
 
-	v = 0xFC | ResponseCommand;
+	v = 0xFC | (ResponseCommand & 0x03); // Nur die unteren 2 Bit verwenden!
 	N2kMsg.AddByte(v);
 }
 
@@ -236,8 +267,8 @@ void SetN2kPGN126985(
 	unsigned char DataSourceIndex,
 	unsigned char AlertOccurence,
 	tN2kAlertLanguage AlertLanguage,
-	char* AlertTextDescription,
-	char* AlertLocationTextDescription
+	const char* AlertTextDescription,
+	const char* AlertLocationTextDescription
 ) {
 	unsigned char v;
 
@@ -254,8 +285,17 @@ void SetN2kPGN126985(
 	N2kMsg.AddByte(DataSourceIndex);
 	N2kMsg.AddByte(AlertOccurence);
 	N2kMsg.AddByte(AlertLanguage);
-	N2kMsg.AddVarStr(AlertTextDescription);
-	N2kMsg.AddVarStr(AlertLocationTextDescription);
+
+	// Begrenzung auf 255 Zeichen (NMEA2000-Standard)
+	char textDesc[256];
+	strncpy(textDesc, AlertTextDescription, 255);
+	textDesc[255] = '\0';
+	N2kMsg.AddVarStr(textDesc);
+
+	char locDesc[256];
+	strncpy(locDesc, AlertLocationTextDescription, 255);
+	locDesc[255] = '\0';
+	N2kMsg.AddVarStr(locDesc);
 };
 
 bool ParseN2kPGN126985(
@@ -270,8 +310,8 @@ bool ParseN2kPGN126985(
 	unsigned char &DataSourceIndex,
 	unsigned char &AlertOccurence,
 	tN2kAlertLanguage &AlertLanguage,
-	char* &AlertTextDescription,
-	char* &AlertLocationTextDescription
+	char* AlertTextDescription, size_t AlertTextDescriptionSize,
+	char* AlertLocationTextDescription, size_t AlertLocationTextDescriptionSize
 ) {
 	if (N2kMsg.PGN != 126985L) return false;
 	int Index = 0;
@@ -287,10 +327,8 @@ bool ParseN2kPGN126985(
 	DataSourceIndex = N2kMsg.GetByte(Index);
 	AlertOccurence = N2kMsg.GetByte(Index);
 	AlertLanguage = tN2kAlertLanguage(N2kMsg.GetByte(Index));
-	size_t AlertTextDescriptionSize = sizeof(AlertTextDescription);
-	N2kMsg.GetVarStr(AlertTextDescriptionSize, (char*)AlertTextDescription, Index);
-	size_t AlertLocationTextDescriptionSize = sizeof(AlertLocationTextDescription);
-	N2kMsg.GetVarStr(AlertLocationTextDescriptionSize, (char*)AlertLocationTextDescription, Index);
+	N2kMsg.GetVarStr(AlertTextDescriptionSize, AlertTextDescription, Index);
+	N2kMsg.GetVarStr(AlertLocationTextDescriptionSize, AlertLocationTextDescription, Index);
 	return true;
 };
 
