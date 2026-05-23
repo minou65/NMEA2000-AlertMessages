@@ -358,6 +358,9 @@ void tN2kAlert::ResetAlert() {
  */
 tN2kAlertThresholdStatus tN2kAlert::TestAlertThreshold(uint64_t v){
 	switch (_ThresholdMethod) {
+	case N2kts_AlertThresholdMethodDisabled:
+		ResetAlert();
+		break;
 	case N2kts_AlertThresholdMethodGreater:
 		(v > _ThresholdLevel) ? SetAlertExceeded() : ResetAlert();
 		break;
