@@ -255,9 +255,10 @@ enum tN2kAlertYesNo {
  * - N2kts_AlertThresholdMethodGreater (2): Trigger alert if value is greater than threshold.
  */
 enum t2kNAlertThresholdMethod {
-    N2kts_AlertThresholdMethodEqual = 0,
-    N2kts_AlertThresholdMethodLower = 1,
-    N2kts_AlertThresholdMethodGreater = 2
+    N2kts_AlertThresholdMethodDisabled = 0,
+    N2kts_AlertThresholdMethodEqual = 1,
+    N2kts_AlertThresholdMethodLower = 2,
+    N2kts_AlertThresholdMethodGreater = 3
 };
 
 #endif
