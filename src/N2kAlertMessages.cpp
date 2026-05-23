@@ -53,6 +53,8 @@
 
 #include "N2kAlertMessages.h"
 
+constexpr auto N2K_PRIORITY_TEXT = 6;
+
 //*****************************************************************************
 // This PGN is used to report the status of an aler
 void SetN2kPGN126983(
@@ -273,7 +275,7 @@ void SetN2kPGN126985(
 	unsigned char v;
 
 	N2kMsg.SetPGN(126985L);
-	N2kMsg.Priority = 2;
+	N2kMsg.Priority = N2K_PRIORITY_TEXT;
 
 	v = (AlertCategory << 4) | (AlertType);
 	N2kMsg.AddByte(v);
